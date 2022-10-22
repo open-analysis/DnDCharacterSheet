@@ -33,11 +33,30 @@ def addSkill(i_master, i_skillName, i_skillVal):
 
     return frm_skill
 
-def removeStat():
-    pass
 
-def removeSkill():
-    pass
+def clearStats(i_frame):
+    for child in i_frame.winfo_children():
+        child.destroy()
+
+
+def updateStats(i_frm_stats, i_frm_skills, i_frm_saves, i_stats, i_statNames, i_skillNames):
+    clearStats(i_frm_stats)
+    clearStats(i_frm_skills)
+    clearStats(i_frm_saves)
+
+    for i in range(len(i_stats)):
+        addStat(i_frm_stats, i_statNames[i], i_stats[i])
+        addSkill(i_frm_saves, i_statNames[i], i_stats[i])
+
+    mods = []
+    for stat in i_stats:
+        mods.append(getModifierFromStat(i_frm_stats, stat))
+
+    for i in range(len(i_skillNames)):
+        for j in range(len(i_skillNames[i])):
+            addSkill(i_frm_skills, i_skillNames[i][j], mods[i])
+
+    
 
 def addSpellSlot(i_master, i_spellName):
     frm_spellSlot = Frame(master=i_master)

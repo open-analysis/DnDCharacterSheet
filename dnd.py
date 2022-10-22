@@ -1,3 +1,4 @@
+from glob import glob
 from tkinter import *
 from tkinter.ttk import *
 from builder import *
@@ -386,109 +387,59 @@ lbl_9lvlInfo.pack()
 btn_edit_stats = Button(master=frm_skills, text="Edit")
 btn_edit_stats.pack()
 
-addStat(frm_stats, "Strength", "10")
-addStat(frm_stats, "Dexterity", "10")
-addStat(frm_stats, "Constitution", "10")
-addStat(frm_stats, "Intelligence", "10")
-addStat(frm_stats, "Wisdom", "10")
-addStat(frm_stats, "Charisma", "10")
+stats = ["10", "10", "10", "10", "10", "10"]
+modNames = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
+skillNames = [["Athletics"], 
+              ["Acrobatics", "Sleight of Hand", "Stealth"], 
+              [], 
+              ["Aracana", "History", "Investigation", "Nature", "Religion"], 
+              ["Animal Handling", "Insight", "Medicine", "Perception", "Survival"], 
+              ["Intimidation", "Performance", "Persuasion"]]
 
-## Populating Skills
-strMod = getModifierFromStat(frm_stats, "Strength")
-dexMod = getModifierFromStat(frm_stats, "Dexterity")
-conMod = getModifierFromStat(frm_stats, "Constitution")
-intMod = getModifierFromStat(frm_stats, "Intelligence")
-wisMod = getModifierFromStat(frm_stats, "Wisdom")
-chaMod = getModifierFromStat(frm_stats, "Charisma")
-
-addSkill(frm_savingThrows, "Strength", strMod)
-addSkill(frm_savingThrows, "Dexerity", dexMod)
-addSkill(frm_savingThrows, "Constitution", conMod)
-addSkill(frm_savingThrows, "Intelligence", intMod)
-addSkill(frm_savingThrows, "Wisdome", wisMod)
-addSkill(frm_savingThrows, "Charisma", chaMod)
-
-addSkill(frm_statSkills, "Acrobatics", dexMod)
-addSkill(frm_statSkills, "Animal Handling", wisMod)
-addSkill(frm_statSkills, "Arcana", intMod)
-addSkill(frm_statSkills, "Athletics", strMod)
-addSkill(frm_statSkills, "Deceoption", chaMod)
-addSkill(frm_statSkills, "History", intMod)
-addSkill(frm_statSkills, "Insight", wisMod)
-addSkill(frm_statSkills, "Intimidation", chaMod)
-addSkill(frm_statSkills, "Investigation", intMod)
-addSkill(frm_statSkills, "Medicine", wisMod)
-addSkill(frm_statSkills, "Nature", intMod)
-addSkill(frm_statSkills, "Perception", wisMod)
-addSkill(frm_statSkills, "Performance", chaMod)
-addSkill(frm_statSkills, "Persuasion", chaMod)
-addSkill(frm_statSkills, "Religion", intMod)
-addSkill(frm_statSkills, "Sleight of Hand", dexMod)
-addSkill(frm_statSkills, "Stealth", dexMod)
-addSkill(frm_statSkills, "Survival", wisMod)
-
+updateStats(frm_stats, frm_statSkills, frm_savingThrows, stats, modNames, skillNames)
 
 def saveStats():
-    global strMod
-    global dexMod
-    global conMod
-    global intMod
-    global wisMod
-    global chaMod
-
-    window = wnd_stats
+    global stats
+    global modNames
+    global skillNames
+    global wnd_stats
 
     count = 0
-    for child in window.winfo_children():
+    for child in wnd_stats.winfo_children():
         if type(child) is Entry:
-            if count == 0:
-                strMod = int(child.get())
-                count+=1
-            elif count == 1:
-                dexMod = int(child.get())
-                count+=1
-            elif count == 2:
-                conMod = int(child.get())
-                count+=1
-            elif count == 3:
-                intMod = int(child.get())
-                count+=1
-            elif count == 4:
-                wisMod = int(child.get())
-                count+=1
-            elif count == 5:
-                charMod = int(child.get())
-            else:
-                break
+            stats[count] = int(child.get())
+            count+=1
 
-    window.destroy()
+    updateStats(frm_stats, frm_statSkills, frm_savingThrows, stats, modNames, skillNames)
+
+    wnd_stats.destroy()
 
     pass
 
-def buildWindow(i_window, i_mods):
+def buildWindow(i_window, i_stats):
     m_lbl_str = Label(master=i_window, text="Strength")
     m_ent_str = Entry(master=i_window)
-    m_ent_str.insert("0", i_mods[0])
+    m_ent_str.insert("0", i_stats[0])
 
     m_lbl_dex = Label(master=i_window, text="Dexterity")
     m_ent_dex = Entry(master=i_window)
-    m_ent_dex.insert("0", i_mods[1])
+    m_ent_dex.insert("0", i_stats[1])
 
     m_lbl_con = Label(master=i_window, text="Constitution")
     m_ent_con = Entry(master=i_window)
-    m_ent_con.insert("0", i_mods[2])
+    m_ent_con.insert("0", i_stats[2])
 
     m_lbl_int = Label(master=i_window, text="Intelligence")
     m_ent_int = Entry(master=i_window)
-    m_ent_int.insert("0", i_mods[3])
+    m_ent_int.insert("0", i_stats[3])
 
     m_lbl_wis = Label(master=i_window, text="Wisdom")
     m_ent_wis = Entry(master=i_window)
-    m_ent_wis.insert("0", i_mods[4])
+    m_ent_wis.insert("0", i_stats[4])
 
     m_lbl_cha = Label(master=i_window, text="Charisma")
     m_ent_cha = Entry(master=i_window)
-    m_ent_cha.insert("0", i_mods[5])
+    m_ent_cha.insert("0", i_stats[5])
 
     btn_save = Button(master=i_window, text="Save & Exit", command=saveStats)
     
@@ -517,11 +468,10 @@ wnd_stats = None
 
 def editStats(event):
     global wnd_stats
+    global stats
 
-    print("Editing stats")
     wnd_stats = Toplevel(window)
-    mods = [strMod, dexMod, conMod, intMod, wisMod, chaMod]
-    buildWindow(wnd_stats, mods)
+    buildWindow(wnd_stats, stats)
 
 btn_edit_stats.bind("<Button-1>", editStats)
 
