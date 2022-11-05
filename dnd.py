@@ -1,15 +1,439 @@
-from glob import glob
+from inspect import EndOfBlock
 from tkinter import *
 from tkinter.ttk import *
-from builder import *
+from math import floor
+import random
 
 window = Tk()
+
+### Globals
+
+stats = ["10", "10", "10", "10", "10", "10"]
+modNames = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
+skillNames = [["Athletics"], 
+              ["Acrobatics", "Sleight of Hand", "Stealth"], 
+              [], 
+              ["Aracana", "History", "Investigation", "Nature", "Religion"], 
+              ["Animal Handling", "Insight", "Medicine", "Perception", "Survival"], 
+              ["Intimidation", "Performance", "Persuasion"]]
+classes = ["Artificer", "Barbarian", "Bard", "Blood Hunter", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
+
+plyrLevel = 0
+plyrClass = "Commoner"
+
+weaponList = []
+
+chkBoxStartVal = IntVar(value=0)
+
+### Functions
+
+def roll(i_numDice=1, i_diceSides=20):
+    total = 0
+    
+    for i in range(i_numDice):
+        total += random.randint(1, i_diceSides)
+    return total
+
+def buildRollWindow(mod, roll):
+    wnd_roll = Toplevel()
+    lbl_calculations = Label(master=wnd_roll, text=f"{roll} + {mod} = {roll+mod}")
+    lbl_calculations.pack()
+
+
+def refreshStats():
+    global stats, modNames, skillNames, weaponList
+    updateStats(stats, modNames, skillNames)
+    clearWeapons()
+    for weapon in weaponList:
+        addWeapon(weapon[0], weapon[1], weapon[2], weapon[3], weapon[4], weapon[5], weapon[6])
+    
+
+def addStat(i_master, i_statName, i_statVal):
+    statMod = floor((int(i_statVal)-10)/2)
+
+    frm_stat = Frame(master=i_master, relief=GROOVE)
+    btn_stat = Button(master=frm_stat, text=statMod, command=lambda : buildRollWindow(int(getModifierFromStat(frm_stats, i_statName)), roll()))
+    lbl_statVal = Label(master=frm_stat, text=i_statVal)
+    lbl_statName = Label(master=frm_stat, text=i_statName)
+    
+    lbl_statName.pack(expand=True)
+    btn_stat.pack(expand=True)
+    lbl_statVal.pack(expand=True)
+    frm_stat.pack(expand=True)
+
+    return frm_stat
+
+def addProfBonus(i_profBonus, i_skillVal):
+    return i_profBonus + i_skillVal
+
+def addSkill(i_master, i_skillName, i_skillVal):
+    frm_skill = Frame(master=i_master)
+    chk_prof = Checkbutton(master=frm_skill, variable=chkBoxStartVal)
+    lbl_skill = Label(master=frm_skill, text=i_skillName)
+    btn_skill = Button(master=frm_skill, text=i_skillVal, command=lambda : buildRollWindow(int(i_skillVal), roll()))
+    
+    chk_prof.pack(side=LEFT, expand=True)
+    btn_skill.pack(side=LEFT, expand=True)
+    lbl_skill.pack(side=RIGHT, fill=BOTH, expand=True)
+    frm_skill.pack()
+
+    return frm_skill
+
+
+def clearStats(i_frame):
+    for child in i_frame.winfo_children():
+        child.destroy()
+
+def clearWeapons():
+    for child in frm_attacks.winfo_children():
+        child.destroy()
+
+def getWeapons():
+    global weaponList
+    weapon_names = []
+    for weapon in weaponList:
+        print(weapon[0])
+        weapon_names.append(weapon[0])
+    return weapon_names
+
+def updateStats(i_stats, i_statNames, i_skillNames):
+    clearStats(frm_stats)
+    clearStats(frm_statSkills)
+    clearStats(frm_savingThrows)
+
+    for i in range(len(i_stats)):
+        addStat(frm_stats, i_statNames[i], i_stats[i])
+
+    mods = []
+    for stat in i_stats:
+        mods.append(getModifierFromStat(frm_stats, stat))
+
+    for i in range(len(i_stats)):
+        addSkill(frm_savingThrows, i_statNames[i], mods[i])
+
+    for i in range(len(i_skillNames)):
+        for j in range(len(i_skillNames[i])):
+            addSkill(frm_statSkills, i_skillNames[i][j], mods[i])
+
+    
+def addSpellSlot(i_master, i_spellName):
+    frm_spellSlot = Frame(master=i_master)
+    chk_prep = Checkbutton(master=frm_spellSlot, variable=chkBoxStartVal)
+    ent_spellSlot = Entry(master=frm_spellSlot)
+    ent_spellSlot.insert(0, i_spellName)
+    
+    chk_prep.pack(side=LEFT)
+    ent_spellSlot.pack(side=RIGHT)
+    frm_spellSlot.pack()
+
+    return frm_spellSlot
+
+
+def rangedAttack(i_attackBns, i_lbl_ammoCount, i_numDice=1, i_diceSides=6):
+    if int(i_lbl_ammoCount["text"]) > 0:
+        buildRollWindow(i_attackBns, roll(i_numDice=i_numDice, i_diceSides=i_diceSides))
+        i_lbl_ammoCount["text"] = (int(i_lbl_ammoCount["text"])-1)
+
+def addWeapon(i_weaponName, i_dmgDice="1d6", i_additionalBns=0, i_additionalDmg=0, i_isDex=False, i_ammoCount=-1):
+    global weaponList
+
+    frm_weapon = Frame(master=frm_attacks)
+
+    weaponList.append([i_weaponName, i_dmgDice, i_additionalBns, i_additionalDmg, i_isDex, i_ammoCount])
+
+    # need to add proficiency bonus
+    attackBns = floor((int(stats[i_isDex])-10)/2 + i_additionalBns)
+    dmgBns = floor((int(stats[i_isDex])-10)/2 + i_additionalDmg)
+
+    attackText = f"{floor((int(stats[i_isDex])-10)/2)}+{i_additionalBns}"
+    dmgText = f"{floor((int(stats[i_isDex])-10)/2)}+{i_additionalDmg}+{i_dmgDice}"
+
+    numDmgDice = int(i_dmgDice.split("d")[0])
+    sidesDmgDice = int(i_dmgDice.split("d")[1])
+
+    lbl_ammoCount = None
+
+    btn_attackBns = Button(master=frm_weapon, text=attackText, command=lambda : buildRollWindow(dmgBns, roll()))
+    btn_dmg = Button(master=frm_weapon, text=dmgText, command=lambda : buildRollWindow(attackBns, roll(i_numDice=numDmgDice, i_diceSides=sidesDmgDice)) if i_ammoCount < 0 else rangedAttack(attackBns, lbl_ammoCount, i_numDice=numDmgDice, i_diceSides=sidesDmgDice))
+    lbl_weaponName = Label(master=frm_weapon, text=i_weaponName)
+    
+    lbl_weaponName.pack(side=LEFT)
+    btn_attackBns.pack(side=LEFT)
+    btn_dmg.pack(side=LEFT)
+
+    if i_ammoCount > -1:
+        lbl_ammoCount = Label(master=frm_weapon, text=i_ammoCount)
+        lbl_ammoCount.pack(side=LEFT)
+
+    frm_weapon.pack()
+
+
+def saveStats():
+    global stats
+    global modNames
+    global skillNames
+    global wnd_stats
+
+    count = 0
+    for child in wnd_stats.winfo_children():
+        if type(child) is Entry:
+            stats[count] = int(child.get())
+            count+=1
+
+    updateStats(stats, modNames, skillNames)
+
+    wnd_stats.destroy()
+
+def saveEditedWeapon(window, weaponName):
+    weapon_info = []
+    dmgDice = ""
+
+    for child in frm_attacks.winfo_children():
+        for grandchild in child.winfo_children():
+            if type(grandchild) is Label:
+                if grandchild["text"] == weaponName:
+                    child.destroy()
+
+    for child in window.winfo_children():
+        if type(child) is Entry:
+            weapon_info.append(child.get())
+
+    tmp = ""
+
+    for i in range(1, len(weapon_info)):
+        if i < 3:
+            if weaponName is not None:
+                # How to save when editing an existing
+                if i == 1:
+                    dmgDice = weapon_info[i]
+                    dmgDice += "d"
+                else:
+                    dmgDice += weapon_info[i]
+            else:
+                if i == 1:
+                    tmp = weapon_info[i]
+                else:
+                    dmgDice += weapon_info[i]
+                    dmgDice += "d"
+                    dmgDice += tmp
+        elif i == 6:
+            if weapon_info[i] == "":
+                weapon_info[i] = -1
+            else:
+                try:
+                    weapon_info[i] = int(weapon_info[i])
+                except:
+                    return
+        else:
+            try:
+                weapon_info[i] = int(weapon_info[i])
+            except:
+                if weapon_info[i] == "":
+                    weapon_info[i] = 0
+                else:
+                    return
+        
+            if i == 5:
+                if weapon_info[i] > 1 or weapon_info[i] < 0:
+                    return
+
+    addWeapon(weapon_info[0], dmgDice, weapon_info[3], weapon_info[4], weapon_info[5], weapon_info[6])
+
+    window.destroy()
+            
+
+    wnd_weapon = Toplevel()
+
+    lbl_weaponName = Label(master=wnd_weapon, text="Weapon name:")
+    lbl_weaponNumDice = Label(master=wnd_weapon, text="Number of dice:")
+    lbl_weaponDamageDice = Label(master=wnd_weapon, text="Damage dice:")
+    lbl_weaponAttackBns = Label(master=wnd_weapon, text="Attack bonus:")
+    lbl_weaponDmgBns = Label(master=wnd_weapon, text="Damage bonus:")
+    lbl_weaponDex = Label(master=wnd_weapon, text="Dex weapon? (0|1):")
+    lbl_ammoCount = Label(master=wnd_weapon, text="Ammo count:")
+    
+    ent_weaponName = Entry(master=wnd_weapon)
+    ent_weaponNumDice = Entry(master=wnd_weapon)
+    ent_weaponDamageDice = Entry(master=wnd_weapon)
+    ent_weaponAttackBns = Entry(master=wnd_weapon)
+    ent_weaponDmgBns = Entry(master=wnd_weapon)
+    ent_weaponDex = Entry(master=wnd_weapon)
+    ent_ammoCount = Entry(master=wnd_weapon)
+
+    btn_save = Button(master=wnd_weapon, text="Save", command=lambda : saveWeapon(wnd_weapon))
+
+    lbl_weaponName.grid(row=0, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponNumDice.grid(row=1, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponDamageDice.grid(row=2, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponAttackBns.grid(row=3, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponDmgBns.grid(row=4, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponDex.grid(row=5, column=0, sticky="e", padx=1, pady=1)
+    lbl_ammoCount.grid(row=6, column=0, sticky="e", padx=1, pady=1)
+
+    ent_weaponName.grid(row=0, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponDamageDice.grid(row=1, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponNumDice.grid(row=2, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponAttackBns.grid(row=3, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponDmgBns.grid(row=4, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponDex.grid(row=5, column=1, sticky="w", padx=1, pady=1)
+    ent_ammoCount.grid(row=6, column=1, sticky="w", padx=1, pady=1)
+
+    btn_save.grid(row=7, column=0, columnspan=2, sticky="snew", pady=1)
+
+def setWeaponEditWindow(window, weaponInfo):
+    count = 0
+    mini = 0
+    for child in window.winfo_children():
+        if type(child) is Entry:
+            child.delete(0, END)
+            if count == 1:
+                child.insert(0, weaponInfo[count].split("d")[mini])
+                mini += 1
+                if mini == 2:
+                    count += 1
+            else:
+                child.insert(0, weaponInfo[count])
+                count += 1
+
+
+def buildWeaponEditWindow():
+    global weaponList
+
+    wnd_weapon = Toplevel()
+
+    weaponVar = StringVar()
+    weapons = {}
+    for weapon in weaponList:
+        weapons[weapon[0]] = weapon
+
+    cmb_weapons = Combobox(master=wnd_weapon, textvariable=weaponVar)
+    cmb_weapons["values"] = getWeapons()
+    cmb_weapons.bind("<<ComboboxSelected>>", lambda event : setWeaponEditWindow(wnd_weapon, weapons[weaponVar.get()]))
+
+    lbl_weaponName = Label(master=wnd_weapon, text="Weapon name:")
+    lbl_weaponNumDice = Label(master=wnd_weapon, text="Number of dice:")
+    lbl_weaponDamageDice = Label(master=wnd_weapon, text="Damage dice:")
+    lbl_weaponAttackBns = Label(master=wnd_weapon, text="Attack bonus:")
+    lbl_weaponDmgBns = Label(master=wnd_weapon, text="Damage bonus:")
+    lbl_weaponDex = Label(master=wnd_weapon, text="Dex weapon? (0|1):")
+    lbl_ammoCount = Label(master=wnd_weapon, text="Ammo count:")
+    
+    ent_weaponName = Entry(master=wnd_weapon)
+    ent_weaponNumDice = Entry(master=wnd_weapon)
+    ent_weaponDamageDice = Entry(master=wnd_weapon)
+    ent_weaponAttackBns = Entry(master=wnd_weapon)
+    ent_weaponDmgBns = Entry(master=wnd_weapon)
+    ent_weaponDex = Entry(master=wnd_weapon)
+    ent_ammoCount = Entry(master=wnd_weapon)
+
+    btn_save = Button(master=wnd_weapon, text="Save", command=lambda : saveEditedWeapon(wnd_weapon, weaponVar.get()))
+
+    lbl_weaponName.grid(row=0, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponNumDice.grid(row=1, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponDamageDice.grid(row=2, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponAttackBns.grid(row=3, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponDmgBns.grid(row=4, column=0, sticky="e", padx=1, pady=1)
+    lbl_weaponDex.grid(row=5, column=0, sticky="e", padx=1, pady=1)
+    lbl_ammoCount.grid(row=6, column=0, sticky="e", padx=1, pady=1)
+
+    ent_weaponName.grid(row=0, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponDamageDice.grid(row=1, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponNumDice.grid(row=2, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponAttackBns.grid(row=3, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponDmgBns.grid(row=4, column=1, sticky="w", padx=1, pady=1)
+    ent_weaponDex.grid(row=5, column=1, sticky="w", padx=1, pady=1)
+    ent_ammoCount.grid(row=6, column=1, sticky="w", padx=1, pady=1)
+
+    btn_save.grid(row=7, column=0, columnspan=2, sticky="snew", pady=1)
+    cmb_weapons.grid(row=8, column=0, columnspan=2, sticky="nsew", padx=1, pady=1)
+
+
+def buildStatsWindow(i_window, i_stats):
+    m_lbl_str = Label(master=i_window, text="Strength")
+    m_ent_str = Entry(master=i_window)
+    m_ent_str.insert("0", i_stats[0])
+
+    m_lbl_dex = Label(master=i_window, text="Dexterity")
+    m_ent_dex = Entry(master=i_window)
+    m_ent_dex.insert("0", i_stats[1])
+
+    m_lbl_con = Label(master=i_window, text="Constitution")
+    m_ent_con = Entry(master=i_window)
+    m_ent_con.insert("0", i_stats[2])
+
+    m_lbl_int = Label(master=i_window, text="Intelligence")
+    m_ent_int = Entry(master=i_window)
+    m_ent_int.insert("0", i_stats[3])
+
+    m_lbl_wis = Label(master=i_window, text="Wisdom")
+    m_ent_wis = Entry(master=i_window)
+    m_ent_wis.insert("0", i_stats[4])
+
+    m_lbl_cha = Label(master=i_window, text="Charisma")
+    m_ent_cha = Entry(master=i_window)
+    m_ent_cha.insert("0", i_stats[5])
+
+    btn_save = Button(master=i_window, text="Save & Exit", command=saveStats)
+    
+        
+    m_lbl_str.grid(row=0, column=0, sticky="e")
+    m_ent_str.grid(row=0, column=1, sticky="w")
+
+    m_lbl_dex.grid(row=1, column=0, sticky="e")
+    m_ent_dex.grid(row=1, column=1, sticky="w")
+
+    m_lbl_con.grid(row=2, column=0, sticky="e")
+    m_ent_con.grid(row=2, column=1, sticky="w")
+
+    m_lbl_int.grid(row=3, column=0, sticky="e")
+    m_ent_int.grid(row=3, column=1, sticky="w")
+
+    m_lbl_wis.grid(row=4, column=0, sticky="e")
+    m_ent_wis.grid(row=4, column=1, sticky="w")
+
+    m_lbl_cha.grid(row=5, column=0, sticky="e")
+    m_ent_cha.grid(row=5, column=1, sticky="w")
+
+    btn_save.grid(row=6, column=0, columnspan=2, sticky="nswe")
+
+def editStats(event):
+    global wnd_stats
+    global stats
+
+    wnd_stats = Toplevel(window)
+    buildStatsWindow(wnd_stats, stats)
+
+
+def searchForWidget(i_parent, i_name):
+    children = i_parent.winfo_children()
+    for child in children:
+        if child["text"] == i_name:
+            return child
+
+def getModifierFromStat(i_parent, i_statName):
+    children = i_parent.winfo_children()
+    for child in children:
+        if child.winfo_children() != None:
+            if searchForWidget(child, i_statName):
+                return child.winfo_children()[0]["text"]
+
+def recursiveSearchForWidget(i_parent, i_name):
+    children = i_parent.winfo_children()
+    for child in children:
+        if child.winfo_id() == i_name:
+            return child            
+        else:
+            if child.winfo_children() != None:
+                return searchForWidget(child, i_name)
+
+
+### Building the window
 
 ## Declaring all of the frames
 
 # General frame splitting & assigning to larger frames
 frm_charInfo = LabelFrame(master=window, relief=RAISED, borderwidth=5, text="Character info")
-frm_charAppear = LabelFrame(master=window, relief=RAISED, borderwidth=5, text="Appearance")
+# frm_charAppear = LabelFrame(master=window, relief=RAISED, borderwidth=5, text="Appearance")
 
 n_actions = Notebook(master=window)
 
@@ -48,8 +472,8 @@ for col in range(3):
     window.columnconfigure(col, weight=1, minsize=50)
 
 frm_charInfo.grid(row=0, column=0, sticky="nwe", padx=5, pady=2)
+# frm_charAppear.grid(row=0, column=0, sticky="swe", padx=5, pady=2)
 frm_combatInfo.grid(row=0, column=1, sticky="nswe", padx=5, pady=2)
-frm_charAppear.grid(row=0, column=0, sticky="swe", padx=5, pady=2)
 frm_personality.grid(row=0, column=2, sticky="nswe", padx=5, pady=2)
 
 frm_skills.grid(row=1, column=0, sticky="nswe", padx=5, pady=2)
@@ -64,6 +488,8 @@ frm_savingThrows.pack(fill=BOTH, side=RIGHT, expand=True, padx=5, pady=2)
 frm_statSkills.pack(fill=BOTH, side=RIGHT, expand=True, padx=5, pady=2)
 
 ## Populating the Character info section
+btn_refresh = Button(master=frm_charInfo, text="Refresh Stats", command=refreshStats)
+
 lbl_charName = Label(master=frm_charInfo, text="Name:")
 lbl_charClass = Label(master=frm_charInfo, text="Class:")
 lbl_charLevel = Label(master=frm_charInfo, text="Level:")
@@ -86,6 +512,7 @@ for row in range(6):
 for col in range(3):
     frm_charInfo.columnconfigure(col, weight=1, minsize=50)
 
+btn_refresh.grid(row=0, column=2, sticky="ew", pady=1, padx=5)
 lbl_charName.grid(row=0, column=0, sticky="e", pady=1)
 ent_charName.grid(row=0, column=1, sticky="ew", padx=1, pady=1)
 
@@ -136,43 +563,43 @@ lbl_spellAttack.grid(row=0, column=6, sticky="e", pady=1)
 ent_spellAttack.grid(row=0, column=7, sticky="ew", padx=1, pady=1)
 
 ## Populating Character appearance
-lbl_charAge = Label(master=frm_charAppear, text="Age:")
-lbl_charHeight = Label(master=frm_charAppear, text="Height:")
-lbl_charWeight = Label(master=frm_charAppear, text="Weight:")
-lbl_charEyes = Label(master=frm_charAppear, text="Eyes:")
-lbl_charSkin = Label(master=frm_charAppear, text="Skin:")
-lbl_charHair = Label(master=frm_charAppear, text="Hair:")
+# lbl_charAge = Label(master=frm_charAppear, text="Age:")
+# lbl_charHeight = Label(master=frm_charAppear, text="Height:")
+# lbl_charWeight = Label(master=frm_charAppear, text="Weight:")
+# lbl_charEyes = Label(master=frm_charAppear, text="Eyes:")
+# lbl_charSkin = Label(master=frm_charAppear, text="Skin:")
+# lbl_charHair = Label(master=frm_charAppear, text="Hair:")
 
-ent_charAge = Entry(master=frm_charAppear)
-ent_charHeight = Entry(master=frm_charAppear)
-ent_charWeight = Entry(master=frm_charAppear)
-ent_charEyes = Entry(master=frm_charAppear)
-ent_charSkin = Entry(master=frm_charAppear)
-ent_charHair = Entry(master=frm_charAppear)
+# ent_charAge = Entry(master=frm_charAppear)
+# ent_charHeight = Entry(master=frm_charAppear)
+# ent_charWeight = Entry(master=frm_charAppear)
+# ent_charEyes = Entry(master=frm_charAppear)
+# ent_charSkin = Entry(master=frm_charAppear)
+# ent_charHair = Entry(master=frm_charAppear)
 
-# Setting the frames onto the window
-for row in range(3):
-    frm_charAppear.rowconfigure(row, weight=1, minsize=50)
-for col in range(6):
-    frm_charAppear.columnconfigure(col, weight=1, minsize=50)
+# # Setting the frames onto the window
+# for row in range(3):
+#     frm_charAppear.rowconfigure(row, weight=1, minsize=50)
+# for col in range(6):
+#     frm_charAppear.columnconfigure(col, weight=1, minsize=50)
 
-lbl_charAge.grid(row=1, column=0, sticky="e", pady=1)
-ent_charAge.grid(row=1, column=1, sticky="ew", padx=1, pady=1)
+# lbl_charAge.grid(row=1, column=0, sticky="e", pady=1)
+# ent_charAge.grid(row=1, column=1, sticky="ew", padx=1, pady=1)
 
-lbl_charHeight.grid(row=1, column=2, sticky="e", pady=1)
-ent_charHeight.grid(row=1, column=3, sticky="ew", padx=1, pady=1)
+# lbl_charHeight.grid(row=1, column=2, sticky="e", pady=1)
+# ent_charHeight.grid(row=1, column=3, sticky="ew", padx=1, pady=1)
 
-lbl_charWeight.grid(row=1, column=4, sticky="e", pady=1)
-ent_charWeight.grid(row=1, column=5, sticky="ew", padx=1, pady=1)
+# lbl_charWeight.grid(row=1, column=4, sticky="e", pady=1)
+# ent_charWeight.grid(row=1, column=5, sticky="ew", padx=1, pady=1)
 
-lbl_charEyes.grid(row=2, column=0, sticky="e", pady=1)
-ent_charEyes.grid(row=2, column=1, sticky="ew", padx=1, pady=1)
+# lbl_charEyes.grid(row=2, column=0, sticky="e", pady=1)
+# ent_charEyes.grid(row=2, column=1, sticky="ew", padx=1, pady=1)
 
-lbl_charSkin.grid(row=2, column=2, sticky="e", pady=1)
-ent_charSkin.grid(row=2, column=3, sticky="ew", padx=1, pady=1)
+# lbl_charSkin.grid(row=2, column=2, sticky="e", pady=1)
+# ent_charSkin.grid(row=2, column=3, sticky="ew", padx=1, pady=1)
 
-lbl_charHair.grid(row=2, column=4, sticky="e", pady=1)
-ent_charHair.grid(row=2, column=5, sticky="ew", padx=1, pady=1)
+# lbl_charHair.grid(row=2, column=4, sticky="e", pady=1)
+# ent_charHair.grid(row=2, column=5, sticky="ew", padx=1, pady=1)
 
 ## Populating Combat info
 lbl_ac = Label(master=frm_combatInfo, text="AC")
@@ -193,12 +620,13 @@ ent_hp = Entry(master=frm_combatInfo)
 ent_tmpHp = Entry(master=frm_combatInfo)
 ent_ttlHitDice = Entry(master=frm_combatInfo)
 ent_hitDice = Entry(master=frm_combatInfo)
-chk_dsFail1 = Checkbutton(master=frm_ds, text="F")
-chk_dsFail2 = Checkbutton(master=frm_ds, text="F")
-chk_dsFail3 = Checkbutton(master=frm_ds, text="F")
-chk_dsSucc1 = Checkbutton(master=frm_ds, text="S")
-chk_dsSucc2 = Checkbutton(master=frm_ds, text="S")
-chk_dsSucc3 = Checkbutton(master=frm_ds, text="S")
+
+chk_dsFail1 = Checkbutton(master=frm_ds, text="F", variable=chkBoxStartVal)
+chk_dsFail2 = Checkbutton(master=frm_ds, text="F", variable=chkBoxStartVal)
+chk_dsFail3 = Checkbutton(master=frm_ds, text="F", variable=chkBoxStartVal)
+chk_dsSucc1 = Checkbutton(master=frm_ds, text="S", variable=chkBoxStartVal)
+chk_dsSucc2 = Checkbutton(master=frm_ds, text="S", variable=chkBoxStartVal)
+chk_dsSucc3 = Checkbutton(master=frm_ds, text="S", variable=chkBoxStartVal)
 
 # Setting the frames onto the window
 for row in range(4):
@@ -290,7 +718,8 @@ lbl_miscProf.grid(row=4, column=0, sticky="nse", padx=1, pady=1)
 txt_miscProf.grid(row=4, column=1, sticky="nsw", padx=1, pady=1)
 
 ## Populating Attack info
-addAttack(frm_attacks, "Axe", "+4", "+2")
+btn_editWeapons = Button(master=frm_attackInfo, text="Edit Weapons", command=buildWeaponEditWindow)
+btn_editWeapons.pack(expand=True)
 
 txt_abilities = Text(master=frm_abilities, width=50, height=20)
 txt_abilities.pack(expand=True, padx=1, pady=1)
@@ -387,91 +816,9 @@ lbl_9lvlInfo.pack()
 btn_edit_stats = Button(master=frm_skills, text="Edit")
 btn_edit_stats.pack()
 
-stats = ["10", "10", "10", "10", "10", "10"]
-modNames = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
-skillNames = [["Athletics"], 
-              ["Acrobatics", "Sleight of Hand", "Stealth"], 
-              [], 
-              ["Aracana", "History", "Investigation", "Nature", "Religion"], 
-              ["Animal Handling", "Insight", "Medicine", "Perception", "Survival"], 
-              ["Intimidation", "Performance", "Persuasion"]]
-
-updateStats(frm_stats, frm_statSkills, frm_savingThrows, stats, modNames, skillNames)
-
-def saveStats():
-    global stats
-    global modNames
-    global skillNames
-    global wnd_stats
-
-    count = 0
-    for child in wnd_stats.winfo_children():
-        if type(child) is Entry:
-            stats[count] = int(child.get())
-            count+=1
-
-    updateStats(frm_stats, frm_statSkills, frm_savingThrows, stats, modNames, skillNames)
-
-    wnd_stats.destroy()
-
-    pass
-
-def buildWindow(i_window, i_stats):
-    m_lbl_str = Label(master=i_window, text="Strength")
-    m_ent_str = Entry(master=i_window)
-    m_ent_str.insert("0", i_stats[0])
-
-    m_lbl_dex = Label(master=i_window, text="Dexterity")
-    m_ent_dex = Entry(master=i_window)
-    m_ent_dex.insert("0", i_stats[1])
-
-    m_lbl_con = Label(master=i_window, text="Constitution")
-    m_ent_con = Entry(master=i_window)
-    m_ent_con.insert("0", i_stats[2])
-
-    m_lbl_int = Label(master=i_window, text="Intelligence")
-    m_ent_int = Entry(master=i_window)
-    m_ent_int.insert("0", i_stats[3])
-
-    m_lbl_wis = Label(master=i_window, text="Wisdom")
-    m_ent_wis = Entry(master=i_window)
-    m_ent_wis.insert("0", i_stats[4])
-
-    m_lbl_cha = Label(master=i_window, text="Charisma")
-    m_ent_cha = Entry(master=i_window)
-    m_ent_cha.insert("0", i_stats[5])
-
-    btn_save = Button(master=i_window, text="Save & Exit", command=saveStats)
-    
-        
-    m_lbl_str.grid(row=0, column=0, sticky="e")
-    m_ent_str.grid(row=0, column=1, sticky="w")
-
-    m_lbl_dex.grid(row=1, column=0, sticky="e")
-    m_ent_dex.grid(row=1, column=1, sticky="w")
-
-    m_lbl_con.grid(row=2, column=0, sticky="e")
-    m_ent_con.grid(row=2, column=1, sticky="w")
-
-    m_lbl_int.grid(row=3, column=0, sticky="e")
-    m_ent_int.grid(row=3, column=1, sticky="w")
-
-    m_lbl_wis.grid(row=4, column=0, sticky="e")
-    m_ent_wis.grid(row=4, column=1, sticky="w")
-
-    m_lbl_cha.grid(row=5, column=0, sticky="e")
-    m_ent_cha.grid(row=5, column=1, sticky="w")
-
-    btn_save.grid(row=6, column=0, columnspan=2, sticky="nswe")
+updateStats(stats, modNames, skillNames)
 
 wnd_stats = None
-
-def editStats(event):
-    global wnd_stats
-    global stats
-
-    wnd_stats = Toplevel(window)
-    buildWindow(wnd_stats, stats)
 
 btn_edit_stats.bind("<Button-1>", editStats)
 
