@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\J\source\repos\DnDCharacterSheet\DnDCharacterSheet\obj\Debug\net6.0-windows\
+D:\Dev\Python\DnDCharacterSheet\DnDCharacterSheet\obj\Debug\net6.0-windows\
 DnDCharacterSheet
 none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
-C:\Users\J\source\repos\DnDCharacterSheet\DnDCharacterSheet\App.xaml
-11407045341
+D:\Dev\Python\DnDCharacterSheet\DnDCharacterSheet\App.xaml
+5310603771
 
-7189634564
-194618410957
-MainWindow.xaml;
+121367963035
+194-2004305220
+MainWindow.xaml;MVVM\View\DiscoveryView.xaml;MVVM\View\HomeView.xaml;Themes\MenuButtonTheme.xaml;Themes\TextboxTheme.xaml;
 
 False
 
