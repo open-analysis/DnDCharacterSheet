@@ -1,3 +1,10 @@
 
 __pycache__/builder.cpython-39.pyc
 tk_test.py
+*.v2
+*.vsidx
+*.lock
+*.v2
+.vs/DnDCharacterSheet/v17/.suo
+*.1
+*.2
