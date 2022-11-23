@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KC4ePDPqFu+zfW9kJ7eMAbm3qbBCK1Hyg7pBMqRoEGCZNDraCN+At7xY/FTPh8F9TAp3+p0f+FgRK7nFfc8HqA==",
+  "dgSpecHash": "XEk8r3cJt85SlBGVTBfduOfwXKV+pURMdGBnHv86AXT6v34CH9BBq/bA2ihZtxDUBLJ0Q/or+6+3NwM1fqAJzQ==",
   "success": true,
-  "projectFilePath": "D:\\Dev\\C#\\DndCharacterSheet\\DndCharacterSheet\\DndCharacterSheet.csproj",
+  "projectFilePath": "D:\\Dev\\C#\\dnd\\DndCharacterSheet\\DndCharacterSheet\\DndCharacterSheet.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

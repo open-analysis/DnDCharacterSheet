@@ -5,8 +5,124 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DndCharacterSheet"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow">
+    
+    <Grid Margin="10">
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Row="0" Grid.Column="0" Margin="10">
+                <Label Content="Max HP"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.Column="1" Margin="10">
+                <Label Content="HP"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.Column="2" Margin="10">
+                <Label Content="Temp HP"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
+                <Label Content="AC"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="1" Margin="10">
+                <Label Content="Total Hit Dice"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="2" Margin="10">
+                <Label Content="Hit Dice"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Grid.Column="0" Margin="10">
+                <Label Content="Iniative"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Grid.Column="1" Margin="10">
+                <Label Content="Speed"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Grid.Column="2" Margin="10">
+                <Label Content="Proficiency"/>
+                <Label Content="0"/>
+            </StackPanel>
+
+        </Grid>
+
+
+        <Grid Grid.Row="1" Grid.Column="0" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+
+            <StackPanel Grid.Column="0">
+                <Label Content="Stats"/>
+                <StackPanel Margin="10">
+                    <Label Content="Strength"/>
+                    <Button Content="0"/>
+                    <Label Content="10"/>
+                </StackPanel>
+
+            </StackPanel>
+
+            <StackPanel Grid.Column="1">
+                <Label Content="Skills"/>
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox/>
+                    <Button Content="0"/>
+                    <Label Content="Athletics"/>
+                </StackPanel>
+                
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+                <Label Content="Saving Throws"/>
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <CheckBox/>
+                    <Button Content="0"/>
+                    <Label Content="Strength"/>
+                </StackPanel>
+            </StackPanel>
+
+        </Grid>
+        
+        
+        
     </Grid>
 </Window>
